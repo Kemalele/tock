@@ -198,12 +198,12 @@ impl<'a, A: Alarm<'a>> SyscallDriver for AlarmDriver<'a, A> {
                     0 => (CommandReturn::success(), false),
                     1 => {
                         // Get clock frequency
-                        let freq = <A::Frequency>::frequency();
-                        (CommandReturn::success_u32(freq), false)
+                        let scaled_freq = <A::Ticks>::u32_shift_scale_freq::<A::Frequency>();
+                        (CommandReturn::success_u32(scaled_freq), false)
                     }
                     2 => {
                         // capture time
-                        (CommandReturn::success_u32(now.into_u32()), false)
+                        (CommandReturn::success_u32(now.into_u32_shifted()), false)
                     }
                     3 => {
                         // Stop

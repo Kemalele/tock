@@ -23,6 +23,9 @@ use core::fmt;
 /// clients to know when wraparound will occur.
 
 pub trait Ticks: Clone + Copy + From<u32> + fmt::Debug + Ord + PartialOrd + Eq {
+    // Width in bits
+    fn width() -> usize;
+
     /// Converts the type into a `usize`, stripping the higher bits
     /// it if it is larger than `usize` and filling the higher bits
     /// with 0 if it is smaller than `usize`.
@@ -34,6 +37,18 @@ pub trait Ticks: Clone + Copy + From<u32> + fmt::Debug + Ord + PartialOrd + Eq {
     /// helper since Tock uses `u32` pervasively and most platforms
     /// are 32 bits.
     fn into_u32(self) -> u32;
+
+    fn u32_shift() -> usize {
+        32_usize.saturating_sub(Self::width())
+    }
+
+    fn into_u32_shifted(self) -> u32 {
+        self.into_u32() << Self::u32_shift()
+    }
+
+    fn u32_shift_scale_freq<F: Frequency>() -> u32 {
+        F::frequency() << Self::u32_shift()
+    }
 
     /// Add two values, wrapping around on overflow using standard
     /// unsigned arithmetic.
@@ -397,6 +412,10 @@ impl From<u32> for Ticks32 {
 }
 
 impl Ticks for Ticks32 {
+    fn width() -> usize {
+        32
+    }
+
     fn into_usize(self) -> usize {
         self.0 as usize
     }
@@ -478,6 +497,10 @@ impl From<u32> for Ticks24 {
 }
 
 impl Ticks for Ticks24 {
+    fn width() -> usize {
+        24
+    }
+
     fn into_usize(self) -> usize {
         self.0 as usize
     }
@@ -571,6 +594,10 @@ impl Ticks16 {
 }
 
 impl Ticks for Ticks16 {
+    fn width() -> usize {
+        16
+    }
+
     fn into_usize(self) -> usize {
         self.0 as usize
     }
@@ -664,6 +691,10 @@ impl From<u64> for Ticks64 {
 }
 
 impl Ticks for Ticks64 {
+    fn width() -> usize {
+        64
+    }
+
     fn into_usize(self) -> usize {
         self.0 as usize
     }
