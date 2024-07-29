@@ -28,7 +28,7 @@ RUSTC_SYSROOT := "$(shell rustc --print sysroot)"
 # rustup component "llvm-tools". In case a system toolchain shall be used, this
 # can be overridden to specify the toolchain prefix, e.g. "llvm" for
 # llvm-{objdump,objcopy,...} or "arm-none-eabi".
-TOOLCHAIN ?= llvm-tools
+TOOLCHAIN ?= arm-none-eabi
 CARGO     ?= cargo
 
 # Not all platforms support the rustup tool. Those that do not can pass
@@ -220,7 +220,10 @@ OBJDUMP ?= $(TOOLCHAIN)-objdump
 #   the kernel binary file. This section is a placeholder for optionally
 #   including application binaries, and only needs to exist in the .elf. By
 #   removing it, we prevent the kernel binary from overwriting applications.
-OBJCOPY_FLAGS ?= --strip-sections --strip-all --remove-section .apps
+
+#OBJCOPY_FLAGS ?= --strip-sections -S --remove-section .apps
+MY_OBJCOPY_FLAGS ?= --update-section .apps=/home/user/workspace/projects/token/tockloader/generated_blink.bin
+
 
 # This make variable allows board-specific Makefiles to pass down options to
 # the Cargo build command. For example, in boards/<custom_board>/Makefile:
@@ -432,6 +435,7 @@ target:
 # Cargo outputs an elf file (just without a file extension)
 %.elf: %
 	$(Q)cp $< $@
+	$(Q)$(OBJCOPY) $(MY_OBJCOPY_FLAGS) $@ $@
 
 
 %.bin: %.elf
